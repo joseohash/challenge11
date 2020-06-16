@@ -56,6 +56,7 @@ interface Food {
   description: string;
   price: number;
   image_url: string;
+  thumbnail_url: string;
   formattedPrice: string;
   extras: Extra[];
 }
@@ -144,6 +145,15 @@ const FoodDetails: React.FC = () => {
   }
 
   const toggleFavorite = useCallback(async () => {
+    await api.post('favorites', {
+      name: food.name,
+      description: food.description,
+      price: food.price,
+      category: routeParams.id,
+      image_url: food.image_url,
+      thumbnail_url: food.thumbnail_url,
+    });
+
     setIsFavorite(state => !state);
   }, [isFavorite, food]);
 
