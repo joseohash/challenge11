@@ -10,6 +10,7 @@ import { Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { ForceTouchGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import formatValue from '../../utils/formatValue';
 
 import api from '../../services/api';
@@ -73,38 +74,75 @@ const FoodDetails: React.FC = () => {
 
   useEffect(() => {
     async function loadFood(): Promise<void> {
-      // Load a specific food with extras based on routeParams id
+      const response = await api.get(`foods/${routeParams.id}`);
+
+      const foodData: Food = {
+        ...response.data,
+        formattedPrice: formatValue(response.data.price),
+      };
+
+      const tempExtras: Extra[] = response.data.extras;
+
+      tempExtras.map(extra => {
+        const tempExtra = extra;
+
+        tempExtra.quantity = 0;
+
+        return extra;
+      });
+      setFood(foodData);
+
+      setExtras(response.data.extras);
     }
 
     loadFood();
   }, [routeParams]);
 
   function handleIncrementExtra(id: number): void {
-    // Increment extra quantity
+    const extrasCopy = [...extras];
+
+    const indexOfExtra = extrasCopy.findIndex(extra => extra.id === id);
+
+    extrasCopy[indexOfExtra].quantity += 1;
+
+    setExtras(extrasCopy);
   }
 
   function handleDecrementExtra(id: number): void {
-    // Decrement extra quantity
+    const extrasCopy = [...extras];
+
+    const indexOfExtra = extrasCopy.findIndex(extra => extra.id === id);
+
+    if (extrasCopy[indexOfExtra].quantity > 0) {
+      extrasCopy[indexOfExtra].quantity -= 1;
+    }
+
+    setExtras(extrasCopy);
   }
 
   function handleIncrementFood(): void {
-    // Increment food quantity
+    setFoodQuantity(state => state + 1);
   }
 
   function handleDecrementFood(): void {
-    // Decrement food quantity
+    setFoodQuantity(state => (state === 1 ? state : state - 1));
   }
 
-  const toggleFavorite = useCallback(() => {
-    // Toggle if food is favorite or not
+  const toggleFavorite = useCallback(async () => {
+    setIsFavorite(state => !state);
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {
-    // Calculate cartTotal
+    const extraTotal = extras.reduce((acc, item) => {
+      return acc + item.quantity * item.value;
+    }, 0);
+
+    return formatValue(extraTotal + food.price * foodQuantity);
   }, [extras, food, foodQuantity]);
 
   async function handleFinishOrder(): Promise<void> {
-    // Finish the order and save on the API
+    const data = {};
+    navigation.navigate('Orders');
   }
 
   // Calculate the correct icon name
