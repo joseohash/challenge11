@@ -98,21 +98,21 @@ const FoodDetails: React.FC = () => {
     loadFood();
   }, [routeParams]);
 
-  useEffect(() => {
-    async function loadFavorite(): Promise<void> {
-      const response = await api.get('favorites');
+  // useEffect(() => {
+  //   async function loadFavorite(): Promise<void> {
+  //     const response = await api.get('favorites');
 
-      const findFavoriteFood = response.data.find(
-        (responseFood: Food) => responseFood.name === food.name,
-      );
+  //     const findFavoriteFood = response.data.find(
+  //       (item: any) => item.id === food.id,
+  //     );
 
-      if (findFavoriteFood) {
-        setIsFavorite(true);
-      }
-    }
+  //     if (findFavoriteFood) {
+  //       setIsFavorite(true);
+  //     }
+  //   }
 
-    loadFavorite();
-  }, [food.name]);
+  //   loadFavorite();
+  // }, [food.id]);
 
   function handleIncrementExtra(id: number): void {
     const extrasCopy = [...extras];
@@ -145,14 +145,13 @@ const FoodDetails: React.FC = () => {
   }
 
   const toggleFavorite = useCallback(async () => {
-    await api.post('favorites', {
-      name: food.name,
-      description: food.description,
-      price: food.price,
-      category: routeParams.id,
-      image_url: food.image_url,
-      thumbnail_url: food.thumbnail_url,
-    });
+    // delete food.extras;
+
+    // if (isFavorite) {
+    //   await api.delete(`favorites/${food.id}`);
+    // } else {
+    //   await api.post('favorites', { food, id: food.id });
+    // }
 
     setIsFavorite(state => !state);
   }, [isFavorite, food]);
@@ -166,8 +165,16 @@ const FoodDetails: React.FC = () => {
   }, [extras, food, foodQuantity]);
 
   async function handleFinishOrder(): Promise<void> {
-    const data = {};
-    navigation.navigate('Orders');
+    const data = {
+      ...food,
+      ...extras,
+      product_id: food.id,
+    };
+
+    delete data.id;
+
+    await api.post('/orders', data);
+    navigation.navigate('DashboardStack');
   }
 
   // Calculate the correct icon name
