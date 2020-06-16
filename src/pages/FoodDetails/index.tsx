@@ -10,7 +10,6 @@ import { Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { ForceTouchGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import formatValue from '../../utils/formatValue';
 
 import api from '../../services/api';
@@ -97,6 +96,22 @@ const FoodDetails: React.FC = () => {
 
     loadFood();
   }, [routeParams]);
+
+  useEffect(() => {
+    async function loadFavorite(): Promise<void> {
+      const response = await api.get('favorites');
+
+      const findFavoriteFood = response.data.find(
+        (responseFood: Food) => responseFood.name === food.name,
+      );
+
+      if (findFavoriteFood) {
+        setIsFavorite(true);
+      }
+    }
+
+    loadFavorite();
+  }, [food.name]);
 
   function handleIncrementExtra(id: number): void {
     const extrasCopy = [...extras];
